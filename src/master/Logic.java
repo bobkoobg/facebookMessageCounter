@@ -1,8 +1,16 @@
 package master;
 
+import entity.Friend;
 import java.util.ArrayList;
+import java.util.Collections;
+import java.util.Comparator;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 import org.jsoup.Jsoup;
+import utilities.FileUtilities;
 
 /**
  * Boyko Surlev
@@ -20,13 +28,51 @@ public class Logic
     private void base()
     {
         FileUtilities fu = new FileUtilities();
-        List<String> fileLines = fu.readFromFile("/media/bobkoo/SWAG/Downloads/friends.htm");
-        System.out.println("lines of html code : " + fileLines.size());
-        List<String> facebookFriends = extractActualListOfFacebookFriendsFromHTML(fileLines);
-        //display friends
+        List<String> friendsFileLines = fu.readFromFile("/media/bobkoo/SWAG/Downloads/friends.htm");
+
+        //***********************
+        System.out.println("lines of html code : " + friendsFileLines.size());
+        List<String> facebookFriends = extractActualListOfFacebookFriendsFromHTML(friendsFileLines);
+        List<Friend> friends = new ArrayList();
         for (int i = 0; i < facebookFriends.size(); i++)
         {
-            System.out.println("#" + i + ", value: " + facebookFriends.get(i));
+            friends.add(new Friend(facebookFriends.get(i)));
+        }
+        //**************************
+        System.out.println("#########################################################################");
+        //*************************
+        List<String> messagesfileLines = fu.readFromFile("/media/bobkoo/SWAG/Downloads/messages.htm");
+        List<String> stripped = new ArrayList();
+
+        for (int i = 0; i < messagesfileLines.size(); i++)
+        {
+            stripped.add(html2text(messagesfileLines.get(i)));
+        }
+        for (Friend f : friends)
+        {
+            for (String currentLine : stripped)
+            {
+                Pattern p = Pattern.compile(f.getName());
+                Matcher m = p.matcher(currentLine);
+                while (m.find())
+                {
+                    f.incrementCounter();
+                }
+
+            }
+        }
+
+        Comparator<Friend> comparator = new Comparator<Friend>()
+        {
+            public int compare(Friend c1, Friend c2)
+            {
+                return c2.getCounter() - c1.getCounter(); // use your logic
+            }
+        };
+
+        Collections.sort(friends, comparator); // use the comparator as much as u want
+        for(Friend f : friends){
+            System.out.println(f.toString());
         }
     }
 
@@ -45,7 +91,7 @@ public class Logic
 
             //Now the html code should be stripped. A space " " will be left where html was found
             String sCurrentLineStrippedHTML = html2text(sCurrentLineWithoutSpaces);
-            
+
             //Now the differences are distinguishable, because there are spaces between all names
             //We need to split each name, because at the begining we merged them together
             String[] sCurrentLineFriendsNamesWithSpaces = sCurrentLineStrippedHTML.split(" ");
@@ -71,20 +117,21 @@ public class Logic
         }
         return facebookFriends;
     }
-    
-    private String stripUnnecessaryHTMLCode(String sCurrentLine){
-                    //The hml file has load of unnecessary info - those 2 if statemets removes that.
-            if (sCurrentLine.contains("<h2>Friends</h2>"))
-            {
-                String[] sCurrentLineActualFriendsList = sCurrentLine.split("<h2>Friends</h2>");
-                sCurrentLine = sCurrentLineActualFriendsList[1];
-            }
-            if (sCurrentLine.contains("<h2>Friend Peer Group</h2>"))
-            {
-                String[] sCurrentLineActualFriendsList = sCurrentLine.split("<h2>Friend Peer Group</h2>");
-                sCurrentLine = sCurrentLineActualFriendsList[0];
-            }
-            return sCurrentLine;
+
+    private String stripUnnecessaryHTMLCode(String sCurrentLine)
+    {
+        //The hml file has load of unnecessary info - those 2 if statemets removes that.
+        if (sCurrentLine.contains("<h2>Friends</h2>"))
+        {
+            String[] sCurrentLineActualFriendsList = sCurrentLine.split("<h2>Friends</h2>");
+            sCurrentLine = sCurrentLineActualFriendsList[1];
+        }
+        if (sCurrentLine.contains("<h2>Friend Peer Group</h2>"))
+        {
+            String[] sCurrentLineActualFriendsList = sCurrentLine.split("<h2>Friend Peer Group</h2>");
+            sCurrentLine = sCurrentLineActualFriendsList[0];
+        }
+        return sCurrentLine;
     }
 
     private String html2text(String html)
