@@ -9,6 +9,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
+import java.util.regex.PatternSyntaxException;
 import org.jsoup.Jsoup;
 import utilities.FileUtilities;
 
@@ -28,52 +29,92 @@ public class Logic
     private void base()
     {
         FileUtilities fu = new FileUtilities();
-        List<String> friendsFileLines = fu.readFromFile("/media/bobkoo/SWAG/Downloads/friends.htm");
+//        List<String> friendsFileLines = fu.readFromFile("/media/bobkoo/SWAG/Downloads/friends.htm");
 
         //***********************
-        System.out.println("lines of html code : " + friendsFileLines.size());
-        List<String> facebookFriends = extractActualListOfFacebookFriendsFromHTML(friendsFileLines);
-        List<Friend> friends = new ArrayList();
-        for (int i = 0; i < facebookFriends.size(); i++)
-        {
-            friends.add(new Friend(facebookFriends.get(i)));
-        }
+//        System.out.println("lines of html code : " + friendsFileLines.size());
+//        List<String> facebookFriends = extractActualListOfFacebookFriendsFromHTML(friendsFileLines);
+//        List<Friend> friends = new ArrayList();
+//        for (int i = 0; i < facebookFriends.size(); i++)
+//        {
+//            friends.add(new Friend(facebookFriends.get(i)));
+//        }
         //**************************
         System.out.println("#########################################################################");
         //*************************
         List<String> messagesfileLines = fu.readFromFile("/media/bobkoo/SWAG/Downloads/messages.htm");
-        List<String> stripped = new ArrayList();
-
-        for (int i = 0; i < messagesfileLines.size(); i++)
+        String[] firstLineSplit = messagesfileLines.get(0).split("</h1>");
+        String[] nameFinder = firstLineSplit[0].split("<h1>");
+        System.out.println("OWNER OF MESSAGES : " + nameFinder[1]);
+        
+        List<String> strippedFromHTMLMessageFileLines = new ArrayList();
+        strippedFromHTMLMessageFileLines.add(firstLineSplit[1]);
+        for (int i = 1; i < messagesfileLines.size(); i++)
         {
-            stripped.add(html2text(messagesfileLines.get(i)));
+            strippedFromHTMLMessageFileLines.add(messagesfileLines.get(i));
         }
-        for (Friend f : friends)
+        //imeto title>Boyko Surlev - Messages</title>
+        String line = strippedFromHTMLMessageFileLines.get(37);
+        //kolko puti se povtarq <div class="message">
+
+        String[] splitArray = null;
+
+        //so split when the current div class="thread" is over
+        splitArray = line.split("</p></div>");
+
+        for (String s : splitArray)
         {
-            for (String currentLine : stripped)
-            {
-                Pattern p = Pattern.compile(f.getName());
-                Matcher m = p.matcher(currentLine);
+            int counter = 0;
+                Pattern p = Pattern.compile("<div class=\"message\">");
+                Matcher m = p.matcher(s);
                 while (m.find())
                 {
-                    f.incrementCounter();
-                }
-
-            }
-        }
-
-        Comparator<Friend> comparator = new Comparator<Friend>()
-        {
-            public int compare(Friend c1, Friend c2)
+                    counter++;
+                }    
+            
+            String[] name = s.split("<div class=\"message\">");
+            if (name[0].contains("<div class=\"thread\">"+nameFinder[1]+", "))
             {
-                return c2.getCounter() - c1.getCounter(); // use your logic
+                String actualName = name[0].split("<div class=\"thread\">"+nameFinder[1]+", ")[1];
+                System.out.println("Name: " + actualName);
             }
-        };
-
-        Collections.sort(friends, comparator); // use the comparator as much as u want
-        for(Friend f : friends){
-            System.out.println(f.toString());
+            System.out.println("Messages: " + counter);
+            System.out.println("# : " + s);
         }
+
+//        List<String> stripped = new ArrayList();
+//
+//        for (int i = 0; i < messagesfileLines.size(); i++)
+//        {
+//            stripped.add(html2text(messagesfileLines.get(i)));
+//        }
+//        for (Friend f : friends)
+//        {
+//            for (String currentLine : stripped)
+//            {
+//                Pattern p = Pattern.compile(f.getName());
+//                Matcher m = p.matcher(currentLine);
+//                while (m.find())
+//                {
+//                    f.incrementCounter();
+//                }
+//
+//            }
+//        }
+//
+//        Comparator<Friend> comparator = new Comparator<Friend>()
+//        {
+//            public int compare(Friend c1, Friend c2)
+//            {
+//                return c2.getCounter() - c1.getCounter(); // use your logic
+//            }
+//        };
+//
+//        Collections.sort(friends, comparator); // use the comparator as much as u want
+//        for (Friend f : friends)
+//        {
+//            System.out.println(f.toString());
+//        }
     }
 
     private List<String> extractActualListOfFacebookFriendsFromHTML(List<String> fileLines)
