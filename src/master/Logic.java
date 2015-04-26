@@ -46,7 +46,7 @@ public class Logic
         String[] firstLineSplit = messagesfileLines.get(0).split("</h1>");
         String[] nameFinder = firstLineSplit[0].split("<h1>");
         System.out.println("OWNER OF MESSAGES : " + nameFinder[1]);
-        
+
         List<String> strippedFromHTMLMessageFileLines = new ArrayList();
         strippedFromHTMLMessageFileLines.add(firstLineSplit[1]);
         for (int i = 1; i < messagesfileLines.size(); i++)
@@ -54,34 +54,54 @@ public class Logic
             strippedFromHTMLMessageFileLines.add(messagesfileLines.get(i));
         }
         //imeto title>Boyko Surlev - Messages</title>
-        String line = strippedFromHTMLMessageFileLines.get(37);
+        //strippedFromHTMLMessageFileLines.size()
+
+        String actualNameOfFriend = null;
+        Friend newFriend = null;
+        Boolean friendFound = null;
+        List<Friend> friends = new ArrayList();
+        //String line = strippedFromHTMLMessageFileLines.get(37);
         //kolko puti se povtarq <div class="message">
 
-        String[] splitArray = null;
-
         //so split when the current div class="thread" is over
-        splitArray = line.split("</p></div>");
-
-        for (String s : splitArray)
+        for (int i = 0; i < strippedFromHTMLMessageFileLines.size(); i++)
         {
-            int counter = 0;
+            String[] splitArray = strippedFromHTMLMessageFileLines.get(i).split("</p></div>");
+
+            for (String s : splitArray)
+            {
+                int counter = 0;
                 Pattern p = Pattern.compile("<div class=\"message\">");
                 Matcher m = p.matcher(s);
                 while (m.find())
                 {
                     counter++;
-                }    
-            
-            String[] name = s.split("<div class=\"message\">");
-            if (name[0].contains("<div class=\"thread\">"+nameFinder[1]+", "))
-            {
-                String actualName = name[0].split("<div class=\"thread\">"+nameFinder[1]+", ")[1];
-                System.out.println("Name: " + actualName);
+                }
+
+                String[] name = s.split("<div class=\"message\">");
+                if (name[0].contains("<div class=\"thread\">" + nameFinder[1] + ", "))
+                {
+                    actualNameOfFriend = name[0].split("<div class=\"thread\">" + nameFinder[1] + ", ")[1];
+                    //System.out.println("Name: " + actualNameOfFriend);
+                    newFriend = giveMeFriend(friends, actualNameOfFriend);
+                    if ("NEW".equals(newFriend.getName()))
+                    {
+                        newFriend = new Friend(actualNameOfFriend);
+                        friends.add(newFriend);
+                    }
+                    //System.out.println("newFriend.getCounter()" + newFriend.getCounter());
+                    //System.out.println("counter " + counter);
+                    newFriend.setCounter(newFriend.getCounter() + counter);
+                }else{
+                    newFriend.setCounter(newFriend.getCounter() + counter);
+                }
+                //System.out.println("User : " + actualNameOfFriend + "Messages: " + counter);
+                //System.out.println("HAXAJXASAKSdhaskxASJDhAKDHJAS <<MESSAGES>> AXHASKJHDKASHDSKJADHJKASd");
+                //System.out.println("# : " + s);
             }
-            System.out.println("Messages: " + counter);
-            System.out.println("# : " + s);
         }
 
+        //System.out.println("Last Used name : " + actualNameOfFriend);
 //        List<String> stripped = new ArrayList();
 //
 //        for (int i = 0; i < messagesfileLines.size(); i++)
@@ -102,19 +122,33 @@ public class Logic
 //            }
 //        }
 //
-//        Comparator<Friend> comparator = new Comparator<Friend>()
-//        {
-//            public int compare(Friend c1, Friend c2)
-//            {
-//                return c2.getCounter() - c1.getCounter(); // use your logic
-//            }
-//        };
-//
-//        Collections.sort(friends, comparator); // use the comparator as much as u want
-//        for (Friend f : friends)
-//        {
-//            System.out.println(f.toString());
-//        }
+        Comparator<Friend> comparator = new Comparator<Friend>()
+        {
+            public int compare(Friend c1, Friend c2)
+            {
+                return c2.getCounter() - c1.getCounter(); // use your logic
+            }
+        };
+
+        Collections.sort(friends, comparator); // use the comparator as much as u want
+        for (Friend f : friends)
+        {
+            System.out.println(f.toString());
+        }
+    }
+
+    public static Friend giveMeFriend(List<Friend> list, String name)
+    {
+        for (Friend object : list)
+        {
+            //System.out.println("object.getName() : " + object.getName());
+            //System.out.println("name : " + name);
+            if (object.getName().equals(name))
+            {
+                return object;
+            }
+        }
+        return new Friend("NEW");
     }
 
     private List<String> extractActualListOfFacebookFriendsFromHTML(List<String> fileLines)

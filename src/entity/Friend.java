@@ -22,6 +22,13 @@ public class Friend
         return counter;
     }
 
+    public void setCounter(Integer counter)
+    {
+        this.counter = counter;
+    }
+    
+    
+
     public Integer incrementCounter()
     {
         return counter++;
