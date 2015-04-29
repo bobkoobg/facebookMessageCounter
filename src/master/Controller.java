@@ -18,28 +18,50 @@ import utilities.MapSorter;
 public class Controller
 {
 
-    //Testing purposes
-    public static void main(String[] args)
+    MapSorter ms;
+    Map<Integer, String> strippedFromHTMLMessageFileLines;
+    String ChatOwner;
+    String downloadInfo;
+
+//    //Testing purposes
+//    public static void main(String[] args)
+//    {
+//        new Controller().base();
+//    }
+//
+//    //Testing purposes
+//    private void base()
+//    {
+//        formatData("/media/bobkoo/SWAG/Downloads/messages.htm");
+//        getResults();
+//    }
+
+    public boolean formatData(String path)
     {
-        new Controller().base();
-    }
-    //Testing purposes
-    private void base()
-    {
-        getResults("/media/bobkoo/SWAG/Downloads/messages.htm");    
+        FileUtilities fu = new FileUtilities();
+        List<String> fileLines = fu.readFromFile(path);
+        if (!fileLines.contains(ProtocolStrings.fileReadingError))
+        {
+            ms = new MapSorter(fileLines);
+
+            strippedFromHTMLMessageFileLines = ms.getHashMapWithMessagesOnly();
+            ChatOwner = ms.getMessageOwnerName();
+            downloadInfo = ms.getMessageDownloadInfo();
+            System.out.println("This is the data of " + ChatOwner + ", " + downloadInfo);
+
+            System.out.println("#########################################################################");
+
+            return true;
+        }
+        return false;
     }
     
-    public List<Friend> getResults(String path){
-        FileUtilities fu = new FileUtilities();
-        MapSorter ms = new MapSorter(fu.readFromFile(path));
-        //*************************
-        Map<Integer, String> strippedFromHTMLMessageFileLines = ms.getHashMapWithOnlyMessages();
-        String ChatOwner = ms.getMessageOwnerName();
-        String downloadInfo = ms.getMessageDownloadInfo();
-        System.out.println("This is the data of " + ChatOwner + ", " + downloadInfo);
-        //*************************
-        System.out.println("#########################################################################");
-        //*************************
+    public String ownerInformation(){
+        return "This is the data of " + ChatOwner + ", " + downloadInfo;
+    }
+
+    public List<Friend> getResults()
+    {
         Friend newFriend = null;
         List<Friend> friends = new ArrayList();
         List<String> friendsInCurrentChat = new ArrayList();
@@ -71,7 +93,7 @@ public class Controller
                     for (String currentFriendInChat : friendsInCurrentChat)
                     {
                         newFriend = seachFriendsByFriendName(friends, currentFriendInChat);
-                        if ("NEW".equals(newFriend.getName()))
+                        if (ProtocolStrings.newFriendName.equals(newFriend.getName()))
                         {
                             newFriend = new Friend(currentFriendInChat);
                             friends.add(newFriend);
@@ -89,7 +111,7 @@ public class Controller
         {
             System.out.println(f.toString());
         }
-        
+
         return friends;
     }
 
@@ -114,7 +136,7 @@ public class Controller
             int lengthOfStart = ProtocolStrings.divClassThread.length();
             if (endIndex != -1)
             {
-                stringOfPeopleInChat = currentChat.substring(startIndex + lengthOfStart, endIndex); // not forgot to put check if(endIndex != -1)
+                stringOfPeopleInChat = currentChat.substring(startIndex + lengthOfStart, endIndex);
             }
 
             String[] arrayOfPeopleInChat = stringOfPeopleInChat.split(", ");

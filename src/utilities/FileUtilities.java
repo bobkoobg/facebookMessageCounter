@@ -5,6 +5,7 @@ import java.io.FileReader;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
+import protocol.ProtocolStrings;
 
 public class FileUtilities
 {
@@ -35,7 +36,7 @@ public class FileUtilities
         {
             e.printStackTrace();
             fileLines.clear();
-            fileLines.add("ERROR" + e);
+            fileLines.add(ProtocolStrings.fileReadingError + e);
         }
         finally
         {
@@ -50,7 +51,7 @@ public class FileUtilities
             {
                 ex.printStackTrace();
                 fileLines.clear();
-                fileLines.add("ERROR" + ex);
+                fileLines.add(ProtocolStrings.fileReadingError + ex);
             }
         }
         return fileLines;

@@ -48,7 +48,7 @@ public class MapSorter
         return getSplitLastLine()[1].split("</div>")[0];
     }
 
-    public Map<Integer, String> getHashMapWithOnlyMessages()
+    public Map<Integer, String> getHashMapWithMessagesOnly()
     {
         messages.put(0, getSplitFirstLine()[1]);
         messages.put(messages.size() - 1, getSplitLastLine()[0]);

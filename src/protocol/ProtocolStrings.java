@@ -10,4 +10,8 @@ public class ProtocolStrings
     public static String divClassThread = "<div class=\"thread\">";
     
     public static String newFriendName = "NEW";
+    
+    public static String exactFileName = "messages.htm";
+    
+    public static String fileReadingError = "##ERROR## :";
 }
