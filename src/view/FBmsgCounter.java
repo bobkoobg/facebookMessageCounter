@@ -425,13 +425,20 @@ public class FBmsgCounter extends javax.swing.JFrame
                 + "just to double check. (Yes, I am crazy, I know) The differences\n"
                 + "were not that big (usually with 100-200messages less than what I\n"
                 + "calculated manually)\n\n"
+                + "Are you stealing my information, you FGT?\n"
+                + "Nope, this program is open-source product and if you do not believe\n"
+                + "me, you better check the code itself on github. It's just taking\n"
+                + "your data, refactoring then it's making some calculations... I guess\n"
+                + "this sums it up. Everything is done locally, of course. I am not\n"
+                + "that pro :P\n\n"
                 + "I think there is something wrong with this program, can I edit it?\n"
                 + "Yes, you can. This is an open sourcep project and I will be happy\n"
                 + "if someone gives me some feedback, so that I can develope my skills.\n\n"
                 + "Info and credits:\n"
                 + "Github project : https://github.com/bobkoobg/facebookMessageCounter\n"
                 + "My linked-in : https://www.linkedin.com/profile/view?id=299306525\n\n"
-                + "Thank you and I hope that this program serves you well ^^");
+                + "Thank you and I hope that this program serves you well ^^\n\n"
+                + "Namaste to Cristi, who helped me with my small bug.");
     }
 
     /**
