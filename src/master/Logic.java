@@ -53,75 +53,64 @@ public class Logic
         {
             strippedFromHTMLMessageFileLines.add(messagesfileLines.get(i));
         }
-        //imeto title>Boyko Surlev - Messages</title>
-        //strippedFromHTMLMessageFileLines.size()
 
-        String actualNameOfFriend = null;
         Friend newFriend = null;
-        Boolean friendFound = null;
         List<Friend> friends = new ArrayList();
-        //String line = strippedFromHTMLMessageFileLines.get(37);
-        //kolko puti se povtarq <div class="message">
+        List<String> friendsInCurrentChat = new ArrayList();
 
-        //so split when the current div class="thread" is over
         for (int i = 0; i < strippedFromHTMLMessageFileLines.size(); i++)
         {
-            String[] splitArray = strippedFromHTMLMessageFileLines.get(i).split("</p></div>");
+            String[] chats = strippedFromHTMLMessageFileLines.get(i).split("</p></div>");
 
-            for (String s : splitArray)
+            for (String currentChat : chats)
             {
-                int counter = 0;
-                Pattern p = Pattern.compile("<div class=\"message\">");
-                Matcher m = p.matcher(s);
-                while (m.find())
+                if (!extractFriendsInCurrentChat(currentChat, nameFinder[1]).isEmpty())
                 {
-                    counter++;
+                    friendsInCurrentChat = extractFriendsInCurrentChat(currentChat, nameFinder[1]);
                 }
 
-                String[] name = s.split("<div class=\"message\">");
-                if (name[0].contains("<div class=\"thread\">" + nameFinder[1] + ", "))
+                //if (name[0].contains("<div class=\"thread\">" + nameFinder[1] + ", "))
+                if (friendsInCurrentChat.size() == 1 || friendsInCurrentChat.isEmpty())
                 {
-                    actualNameOfFriend = name[0].split("<div class=\"thread\">" + nameFinder[1] + ", ")[1];
-                    //System.out.println("Name: " + actualNameOfFriend);
-                    newFriend = giveMeFriend(friends, actualNameOfFriend);
+                    newFriend = giveMeFriend(friends, friendsInCurrentChat.get(0));
                     if ("NEW".equals(newFriend.getName()))
                     {
-                        newFriend = new Friend(actualNameOfFriend);
+                        newFriend = new Friend(friendsInCurrentChat.get(0));
                         friends.add(newFriend);
                     }
-                    //System.out.println("newFriend.getCounter()" + newFriend.getCounter());
-                    //System.out.println("counter " + counter);
-                    newFriend.setCounter(newFriend.getCounter() + counter);
-                }else{
-                    newFriend.setCounter(newFriend.getCounter() + counter);
+
+                    counterBoy(currentChat, newFriend, "<div class=\"message\">");
+
+                    //newFriend.setCounter(newFriend.getCounter() + counter);
                 }
-                //System.out.println("User : " + actualNameOfFriend + "Messages: " + counter);
-                //System.out.println("HAXAJXASAKSdhaskxASJDhAKDHJAS <<MESSAGES>> AXHASKJHDKASHDSKJADHJKASd");
-                //System.out.println("# : " + s);
+                else
+                {
+                    for (String currentFriendInChat : friendsInCurrentChat)
+                    {
+                        newFriend = giveMeFriend(friends, currentFriendInChat);
+                        if ("NEW".equals(newFriend.getName()))
+                        {
+                            //System.out.println("We failed with : " + currentFriendInChat);
+                            newFriend = new Friend(currentFriendInChat);
+                            friends.add(newFriend);
+                        }
+
+//                        int counter2 = 0;
+//                        Pattern p2 = Pattern.compile(currentFriendInChat);
+//                        Matcher m2 = p2.matcher(currentChat);
+//                        while (m2.find())
+//                        {
+//                            counter2++;
+//                        }
+//
+//                        newFriend.setCounter(newFriend.getCounter() + counter2);
+                        counterBoy(currentChat, newFriend, currentFriendInChat);
+                    }
+                }
+
             }
         }
 
-        //System.out.println("Last Used name : " + actualNameOfFriend);
-//        List<String> stripped = new ArrayList();
-//
-//        for (int i = 0; i < messagesfileLines.size(); i++)
-//        {
-//            stripped.add(html2text(messagesfileLines.get(i)));
-//        }
-//        for (Friend f : friends)
-//        {
-//            for (String currentLine : stripped)
-//            {
-//                Pattern p = Pattern.compile(f.getName());
-//                Matcher m = p.matcher(currentLine);
-//                while (m.find())
-//                {
-//                    f.incrementCounter();
-//                }
-//
-//            }
-//        }
-//
         Comparator<Friend> comparator = new Comparator<Friend>()
         {
             public int compare(Friend c1, Friend c2)
@@ -137,6 +126,46 @@ public class Logic
         }
     }
 
+    private void counterBoy(String currentChat, Friend newFriend, String pattern)
+    {
+        Pattern p = Pattern.compile(pattern);
+        Matcher m = p.matcher(currentChat);
+        while (m.find())
+        {
+            newFriend.incrementCounter();
+        }
+        //return newFriend;
+    }
+
+    private List<String> extractFriendsInCurrentChat(String currentChat, String ChatOwner)
+    {
+        List<String> listOfFriendsInCurrentChat = new ArrayList();
+        String stringOfPeopleInChat = null;
+        if (currentChat.contains("<div class=\"thread\">"))
+        {
+            int endIndex = currentChat.indexOf("<div class=\"message\">");
+            int startIndex = currentChat.indexOf("<div class=\"thread\">");
+            int lengthOfStart = "<div class=\"thread\">".length();
+            // System.out.println("start index " + startIndex);
+            if (endIndex != -1)
+            {
+                stringOfPeopleInChat = currentChat.substring(startIndex + lengthOfStart, endIndex); // not forgot to put check if(endIndex != -1)
+            }
+
+            String[] arrayOfPeopleInChat = stringOfPeopleInChat.split(", ");
+            for (String currentPerson : arrayOfPeopleInChat)
+            {
+                if (!ChatOwner.equals(currentPerson))
+                {
+                    listOfFriendsInCurrentChat.add(currentPerson);
+                }
+            }
+
+        }
+
+        return listOfFriendsInCurrentChat;
+    }
+
     public static Friend giveMeFriend(List<Friend> list, String name)
     {
         for (Friend object : list)
@@ -145,68 +174,11 @@ public class Logic
             //System.out.println("name : " + name);
             if (object.getName().equals(name))
             {
+                //System.out.println("Found ONE!");
                 return object;
             }
         }
         return new Friend("NEW");
-    }
-
-    private List<String> extractActualListOfFacebookFriendsFromHTML(List<String> fileLines)
-    {
-        List<String> facebookFriends = new ArrayList();
-
-        for (String sCurrentLine : fileLines)
-        {
-
-            //Strip starting and ending code of the html line
-            sCurrentLine = stripUnnecessaryHTMLCode(sCurrentLine);
-
-            //Names should merge without spaces, so that the split will work properly.
-            String sCurrentLineWithoutSpaces = sCurrentLine.replaceAll("\\s+", "");
-
-            //Now the html code should be stripped. A space " " will be left where html was found
-            String sCurrentLineStrippedHTML = html2text(sCurrentLineWithoutSpaces);
-
-            //Now the differences are distinguishable, because there are spaces between all names
-            //We need to split each name, because at the begining we merged them together
-            String[] sCurrentLineFriendsNamesWithSpaces = sCurrentLineStrippedHTML.split(" ");
-            for (String currentFBFriend : sCurrentLineFriendsNamesWithSpaces)
-            {
-                if (!facebookFriends.contains(currentFBFriend))
-                {
-                    char[] particularNameCharacters = currentFBFriend.toCharArray();
-                    for (int i = 0; i < particularNameCharacters.length; i++)
-                    {
-                        //when you find the 2nd upper case (aka Surname), refactor
-                        if (i != 0 && Character.isUpperCase(particularNameCharacters[i]))
-                        {
-                            String firstName = currentFBFriend.substring(0, i);
-                            String secondName = currentFBFriend.substring(i, currentFBFriend.length());
-                            currentFBFriend = firstName + " " + secondName;
-                        }
-                    }
-                    //add to the actual list of friends
-                    facebookFriends.add(currentFBFriend);
-                }
-            }
-        }
-        return facebookFriends;
-    }
-
-    private String stripUnnecessaryHTMLCode(String sCurrentLine)
-    {
-        //The hml file has load of unnecessary info - those 2 if statemets removes that.
-        if (sCurrentLine.contains("<h2>Friends</h2>"))
-        {
-            String[] sCurrentLineActualFriendsList = sCurrentLine.split("<h2>Friends</h2>");
-            sCurrentLine = sCurrentLineActualFriendsList[1];
-        }
-        if (sCurrentLine.contains("<h2>Friend Peer Group</h2>"))
-        {
-            String[] sCurrentLineActualFriendsList = sCurrentLine.split("<h2>Friend Peer Group</h2>");
-            sCurrentLine = sCurrentLineActualFriendsList[0];
-        }
-        return sCurrentLine;
     }
 
     private String html2text(String html)
