@@ -7,6 +7,7 @@ import java.util.Map;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import entity.Friend;
+import java.util.Arrays;
 import protocol.ProtocolStrings;
 import utilities.FileUtilities;
 import utilities.FriendsComparator;
@@ -22,19 +23,23 @@ public class Controller
     Map<Integer, String> strippedFromHTMLMessageFileLines;
     String ChatOwner;
     String downloadInfo;
+    List<String> userAliases;
 
-//    //Testing purposes
-//    public static void main(String[] args)
-//    {
-//        new Controller().base();
-//    }
-//
-//    //Testing purposes
-//    private void base()
-//    {
-//        formatData("/media/bobkoo/SWAG/Downloads/messages.htm");
-//        getResults();
-//    }
+    //Testing purposes
+    public static void main(String[] args)
+    {
+        new Controller().base();
+    }
+
+    //Testing purposes
+    private void base()
+    {
+        //This should check if the file is proper or corrupted or fake
+        formatData("/media/bobkoo/SWAG/Downloads/messages.htm");
+        omitParticularUserAlias(new ArrayList<String>(Arrays.asList("BoYko Bee", "Córdoba", "La Plata")));
+        //omitParticularUserAlias(null);
+        getResults();
+    }
 
     public boolean formatData(String path)
     {
@@ -47,22 +52,35 @@ public class Controller
             strippedFromHTMLMessageFileLines = ms.getHashMapWithMessagesOnly();
             ChatOwner = ms.getMessageOwnerName();
             downloadInfo = ms.getMessageDownloadInfo();
-            System.out.println("This is the data of " + ChatOwner + ", " + downloadInfo);
 
+            System.out.println("This is the data of " + ChatOwner + ", " + downloadInfo);
             System.out.println("#########################################################################");
 
             return true;
         }
         return false;
     }
-    
-    public String ownerInformation(){
+
+    public boolean omitParticularUserAlias(List<String> userAlias)
+    {
+        if (userAlias != null)
+        {
+            userAliases = userAlias;
+            return true;
+        }
+        userAliases = new ArrayList<String>(Arrays.asList(ChatOwner));
+        return false;
+        
+    }
+
+    public String ownerInformation()
+    {
         return "This is the data of " + ChatOwner + ", " + downloadInfo;
     }
 
     public List<Friend> getResults()
     {
-        Friend newFriend = null;
+        Friend currentFriend = null;
         List<Friend> friends = new ArrayList();
         List<String> friendsInCurrentChat = new ArrayList();
 
@@ -76,29 +94,42 @@ public class Controller
                 {
                     friendsInCurrentChat = extractFriendsFromCurrentChat(currentChat, ChatOwner);
                 }
-
                 if (friendsInCurrentChat.size() == 1 || friendsInCurrentChat.isEmpty())
                 {
-                    newFriend = seachFriendsByFriendName(friends, friendsInCurrentChat.get(0));
-                    if (ProtocolStrings.newFriendName.equals(newFriend.getName()))
+                    String friendName = friendsInCurrentChat.get(0);
+                    if (!friendName.contains(";facebook.com") && !userAliases.contains(friendName))
                     {
-                        newFriend = new Friend(friendsInCurrentChat.get(0));
-                        friends.add(newFriend);
+                        currentFriend = seachFriendsByFriendName(friends, friendName);
+                        if (ProtocolStrings.newFriendName.equals(currentFriend.getName()))
+                        {
+                            currentFriend = new Friend(friendName);
+                            friends.add(currentFriend);
+                        }
+                        counterIncrementer(currentChat, currentFriend, ProtocolStrings.divClassMessage);
                     }
-
-                    counterIncrementer(currentChat, newFriend, ProtocolStrings.divClassMessage);
                 }
                 else
                 {
+//                    System.out.println("Chat between: ");
+//                    for (String s : friendsInCurrentChat)
+//                    {
+//                        System.out.println("#: " + s);
+//                    }
                     for (String currentFriendInChat : friendsInCurrentChat)
                     {
-                        newFriend = seachFriendsByFriendName(friends, currentFriendInChat);
-                        if (ProtocolStrings.newFriendName.equals(newFriend.getName()))
+                        String friendName = friendsInCurrentChat.get(0);
+                        if (!friendName.contains(";facebook.com") && !userAliases.contains(friendName))
                         {
-                            newFriend = new Friend(currentFriendInChat);
-                            friends.add(newFriend);
+                            currentFriend = seachFriendsByFriendName(friends, currentFriendInChat);
+                            if (ProtocolStrings.newFriendName.equals(currentFriend.getName()))
+                            {
+                                currentFriend = new Friend(currentFriendInChat);
+                                friends.add(currentFriend);
+                            }
+                            counterIncrementer(currentChat, currentFriend, currentFriendInChat);
+
+                            counterIncrementer(currentChat, currentFriend, friendsInCurrentChat);
                         }
-                        counterIncrementer(currentChat, newFriend, currentFriendInChat);
                     }
                 }
             }
@@ -107,9 +138,10 @@ public class Controller
         FriendsComparator comparator = new FriendsComparator();
 
         Collections.sort(friends, comparator);
-        for (Friend f : friends)
+        for (int i = 0; i < friends.size(); i++)
         {
-            System.out.println(f.toString());
+
+            System.out.println("#:" + (i + 1) + " - " + friends.get(i).toString());
         }
 
         return friends;
@@ -119,9 +151,31 @@ public class Controller
     {
         Pattern p = Pattern.compile(pattern);
         Matcher m = p.matcher(currentChat);
+
         while (m.find())
         {
             newFriend.incrementCounter();
+        }
+
+    }
+
+    private void counterIncrementer(String currentChat, Friend newFriend, List<String> friendsInCurrentChat)
+    {
+
+        Pattern p = Pattern.compile(ChatOwner);
+        Matcher m = p.matcher(currentChat);
+
+        int ownerMessagesCounterInPublicChats = 0;
+        while (m.find())
+        {
+            ownerMessagesCounterInPublicChats++;
+        }
+        if (ownerMessagesCounterInPublicChats >= friendsInCurrentChat.size())
+        {
+            int quotaOfVotesForParticularFriendInPublicChat = (ownerMessagesCounterInPublicChats / friendsInCurrentChat.size());
+            System.out.println(newFriend.getName() + " goes from >>> " + newFriend.getCounter() + " to >>> " + (newFriend.getCounter() + quotaOfVotesForParticularFriendInPublicChat));
+            newFriend.setCounter(newFriend.getCounter() + quotaOfVotesForParticularFriendInPublicChat);
+
         }
     }
 
@@ -131,6 +185,7 @@ public class Controller
         String stringOfPeopleInChat = null;
         if (currentChat.contains(ProtocolStrings.divClassThread))
         {
+            //2 thats the logic.. should be sth like that (to extract time)
             int endIndex = currentChat.indexOf(ProtocolStrings.divClassMessage);
             int startIndex = currentChat.indexOf(ProtocolStrings.divClassThread);
             int lengthOfStart = ProtocolStrings.divClassThread.length();
@@ -157,11 +212,8 @@ public class Controller
     {
         for (Friend object : list)
         {
-            //System.out.println("object.getName() : " + object.getName());
-            //System.out.println("name : " + name);
             if (object.getName().equals(name))
             {
-                //System.out.println("Found ONE!");
                 return object;
             }
         }

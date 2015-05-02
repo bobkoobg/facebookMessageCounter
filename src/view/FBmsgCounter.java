@@ -310,9 +310,10 @@ public class FBmsgCounter extends javax.swing.JFrame
     private void jButtonExecuteActionPerformed(java.awt.event.ActionEvent evt)//GEN-FIRST:event_jButtonExecuteActionPerformed
     {//GEN-HEADEREND:event_jButtonExecuteActionPerformed
         String filePath = jTextFieldFileLocation.getText();
-        int y = filePath.lastIndexOf('/');
-        String fileName = filePath.substring(y + 1);
-        if (ProtocolStrings.exactFileName.equals(fileName))
+        int lastDotIndex = filePath.lastIndexOf('.');
+        String fileExtension = filePath.substring(lastDotIndex);
+        System.out.println("fileExtension: " + fileExtension);
+        if (ProtocolStrings.exactFileExtension.equals(fileExtension))
         {
             Controller controller = new Controller();
             if (controller.formatData(filePath))
@@ -419,7 +420,9 @@ public class FBmsgCounter extends javax.swing.JFrame
                 + "This code was released on 29.04.2015\n"
                 + "If a user had changed his/her name he/she will be considered as 2 or\n"
                 + "more different people, depending on the amount of name changes and\n"
-                + "this cannot be omitted, because of the format of the HTML file itself.\n\n"
+                + "this cannot be omitted, because of the format of the HTML file itself.\n"
+                + "If you have added HTML code to any message in a facebook chat, you\n"
+                + "will most probably slightly disturb the resuts made by this program\n\n"
                 + "How can I be sure that the calculations are correct?\n"
                 + "Believe me, I calculated manually my chat messages several times\n"
                 + "just to double check. (Yes, I am crazy, I know) The differences\n"
