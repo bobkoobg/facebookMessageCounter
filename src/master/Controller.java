@@ -7,7 +7,13 @@ import java.util.Map;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import entity.Friend;
+import java.text.DateFormat;
+import java.text.ParseException;
+import java.text.SimpleDateFormat;
 import java.util.Arrays;
+import java.util.Date;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import protocol.ProtocolStrings;
 import utilities.FileUtilities;
 import utilities.FriendsComparator;
@@ -70,7 +76,6 @@ public class Controller
         }
         userAliases = new ArrayList<String>(Arrays.asList(ChatOwner));
         return false;
-        
     }
 
     public String ownerInformation()
@@ -105,6 +110,7 @@ public class Controller
                             currentFriend = new Friend(friendName);
                             friends.add(currentFriend);
                         }
+                        extractDateFromCurrentChatMessage(currentChat, currentFriend);
                         counterIncrementer(currentChat, currentFriend, ProtocolStrings.divClassMessage);
                     }
                 }
@@ -126,6 +132,8 @@ public class Controller
                                 currentFriend = new Friend(currentFriendInChat);
                                 friends.add(currentFriend);
                             }
+                            extractDateFromCurrentChatMessage(currentChat, currentFriend);
+
                             counterIncrementer(currentChat, currentFriend, currentFriendInChat);
 
                             counterIncrementer(currentChat, currentFriend, friendsInCurrentChat);
@@ -140,8 +148,8 @@ public class Controller
         Collections.sort(friends, comparator);
         for (int i = 0; i < friends.size(); i++)
         {
-
-            System.out.println("#:" + (i + 1) + " - " + friends.get(i).toString());
+            System.out.println("#:" + (i + 1) + " - " + friends.get(i).toString()
+                    + " ###Chat history length : " + daysBetween(friends.get(i).getFirstMessage(), friends.get(i).getLastMessage()));
         }
 
         return friends;
@@ -173,7 +181,7 @@ public class Controller
         if (ownerMessagesCounterInPublicChats >= friendsInCurrentChat.size())
         {
             int quotaOfVotesForParticularFriendInPublicChat = (ownerMessagesCounterInPublicChats / friendsInCurrentChat.size());
-            System.out.println(newFriend.getName() + " goes from >>> " + newFriend.getCounter() + " to >>> " + (newFriend.getCounter() + quotaOfVotesForParticularFriendInPublicChat));
+            //System.out.println(newFriend.getName() + " goes from >>> " + newFriend.getCounter() + " to >>> " + (newFriend.getCounter() + quotaOfVotesForParticularFriendInPublicChat));
             newFriend.setCounter(newFriend.getCounter() + quotaOfVotesForParticularFriendInPublicChat);
 
         }
@@ -206,6 +214,77 @@ public class Controller
         }
 
         return listOfFriendsInCurrentChat;
+    }
+
+    private void extractDateFromCurrentChatMessage(String currentChat, Friend currentFriend)
+    {
+        //lets say we reach the point where we can extract every meta
+        //from every chat message
+
+        String[] messages = currentChat.split(ProtocolStrings.divClassMessage);
+        for (String currentMessage : messages)
+        {
+            if (currentMessage.contains("<span class=\"meta\">"))
+            {
+                int endOfSpan = currentMessage.indexOf("</span></div></div>");
+                int startOfSpan = currentMessage.indexOf("<span class=\"meta\">");
+                int lengthOfStartofSpan = "<span class=\"meta\">".length();
+                String spanClassMeta = null;
+                if (endOfSpan != -1)
+                {
+                    spanClassMeta = currentMessage.substring(lengthOfStartofSpan + startOfSpan, endOfSpan);
+                }
+                int startOfComma = spanClassMeta.indexOf(", ");
+                int startOfAt = spanClassMeta.indexOf(" at");
+                String actualDate = null;
+                if (endOfSpan != -1)
+                {
+                    actualDate = spanClassMeta.substring(startOfComma + 2, startOfAt);
+                }
+                Date currentMessageDateTime = null;
+                DateFormat df = new SimpleDateFormat("MMM dd, yyyy");
+                try
+                {
+                    currentMessageDateTime = df.parse(actualDate);
+                }
+                catch (ParseException ex)
+                {
+                    Logger.getLogger(Controller.class.getName()).log(Level.SEVERE, null, ex);
+                }
+                //System.out.println("Date: " + currentMessageDateTime.toString());
+
+                //The actual logic
+                if (currentFriend.getFirstMessage() != null)
+                {
+                    if (currentMessageDateTime.before(currentFriend.getFirstMessage()))
+                    {
+                        currentFriend.setFirstMessage(currentMessageDateTime);
+                    }
+                }
+                else
+                {
+                    currentFriend.setFirstMessage(currentMessageDateTime);
+                }
+
+                if (currentFriend.getLastMessage() != null)
+                {
+                    if (currentMessageDateTime.after(currentFriend.getLastMessage()))
+                    {
+                        currentFriend.setLastMessage(currentMessageDateTime);
+                    }
+                }
+                else
+                {
+                    currentFriend.setLastMessage(currentMessageDateTime);
+                }
+            }
+
+        }
+    }
+
+    public int daysBetween(Date d1, Date d2)
+    {
+        return (int) ((d2.getTime() - d1.getTime()) / (1000 * 60 * 60 * 24));
     }
 
     public static Friend seachFriendsByFriendName(List<Friend> list, String name)

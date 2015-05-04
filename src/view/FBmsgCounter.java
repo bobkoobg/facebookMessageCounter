@@ -7,8 +7,12 @@ package view;
 
 import entity.Friend;
 import java.io.File;
+import java.util.ArrayList;
+import java.util.Date;
+import java.util.Iterator;
 import java.util.List;
 import javax.swing.JFileChooser;
+import javax.swing.JTable;
 import javax.swing.table.DefaultTableModel;
 import master.Controller;
 import protocol.ProtocolStrings;
@@ -23,6 +27,10 @@ public class FBmsgCounter extends javax.swing.JFrame
     /**
      * Creates new form FBmsgCounter
      */
+    private List<String> peopleToRemove;
+
+    Controller controller;
+
     public FBmsgCounter()
     {
 
@@ -34,6 +42,8 @@ public class FBmsgCounter extends javax.swing.JFrame
 
         setLocationRelativeTo(null);
 
+        controller = new Controller();
+        peopleToRemove = new ArrayList();
         jLabelMainPicture.setIcon(new javax.swing.ImageIcon(getClass().getResource("/view/pics/bfmr.jpg")));
     }
 
@@ -56,6 +66,11 @@ public class FBmsgCounter extends javax.swing.JFrame
         jLabelState = new javax.swing.JLabel();
         jTextFieldFileLocation = new javax.swing.JTextField();
         jButton1 = new javax.swing.JButton();
+        jTextFieldName = new javax.swing.JTextField();
+        jLabel2 = new javax.swing.JLabel();
+        jButtonAdd = new javax.swing.JButton();
+        jButtonRemove = new javax.swing.JButton();
+        jComboBoxForbiddenNames = new javax.swing.JComboBox();
         jPanelCredits = new javax.swing.JPanel();
         jLabel3 = new javax.swing.JLabel();
         jScrollPane2 = new javax.swing.JScrollPane();
@@ -70,7 +85,7 @@ public class FBmsgCounter extends javax.swing.JFrame
         setDefaultCloseOperation(javax.swing.WindowConstants.EXIT_ON_CLOSE);
         setTitle("Bobkoo's Facebook Message Reader");
         setCursor(new java.awt.Cursor(java.awt.Cursor.DEFAULT_CURSOR));
-        setPreferredSize(new java.awt.Dimension(500, 500));
+        setPreferredSize(new java.awt.Dimension(700, 500));
         setResizable(false);
 
         jTextFieldOwnerInfo.setText("jTextField1");
@@ -78,24 +93,24 @@ public class FBmsgCounter extends javax.swing.JFrame
         jTableFriends.setModel(new javax.swing.table.DefaultTableModel(
             new Object [][]
             {
-                {null, null, null},
-                {null, null, null},
-                {null, null, null},
-                {null, null, null}
+                {null, null, null, null, null, null},
+                {null, null, null, null, null, null},
+                {null, null, null, null, null, null},
+                {null, null, null, null, null, null}
             },
             new String []
             {
-                "#", "Friend Name", "Messages"
+                "#", "Friend Name", "Messages", "First Message", "Last Message", "Chat Duration"
             }
         )
         {
             Class[] types = new Class []
             {
-                java.lang.Integer.class, java.lang.String.class, java.lang.Integer.class
+                java.lang.Integer.class, java.lang.String.class, java.lang.Integer.class, java.lang.String.class, java.lang.String.class, java.lang.String.class
             };
             boolean[] canEdit = new boolean []
             {
-                true, false, false
+                true, false, false, true, true, true
             };
 
             public Class getColumnClass(int columnIndex)
@@ -111,9 +126,9 @@ public class FBmsgCounter extends javax.swing.JFrame
         jScrollPane1.setViewportView(jTableFriends);
         if (jTableFriends.getColumnModel().getColumnCount() > 0)
         {
-            jTableFriends.getColumnModel().getColumn(0).setMinWidth(100);
-            jTableFriends.getColumnModel().getColumn(0).setPreferredWidth(10);
-            jTableFriends.getColumnModel().getColumn(0).setMaxWidth(100);
+            jTableFriends.getColumnModel().getColumn(0).setMinWidth(10);
+            jTableFriends.getColumnModel().getColumn(0).setPreferredWidth(59);
+            jTableFriends.getColumnModel().getColumn(0).setMaxWidth(10);
             jTableFriends.getColumnModel().getColumn(1).setResizable(false);
             jTableFriends.getColumnModel().getColumn(2).setResizable(false);
         }
@@ -140,6 +155,26 @@ public class FBmsgCounter extends javax.swing.JFrame
             }
         });
 
+        jLabel2.setText("Exclude people (including your previous names)");
+
+        jButtonAdd.setText("Add");
+        jButtonAdd.addActionListener(new java.awt.event.ActionListener()
+        {
+            public void actionPerformed(java.awt.event.ActionEvent evt)
+            {
+                jButtonAddActionPerformed(evt);
+            }
+        });
+
+        jButtonRemove.setText("Remove");
+        jButtonRemove.addActionListener(new java.awt.event.ActionListener()
+        {
+            public void actionPerformed(java.awt.event.ActionEvent evt)
+            {
+                jButtonRemoveActionPerformed(evt);
+            }
+        });
+
         javax.swing.GroupLayout jPanelProgramLayout = new javax.swing.GroupLayout(jPanelProgram);
         jPanelProgram.setLayout(jPanelProgramLayout);
         jPanelProgramLayout.setHorizontalGroup(
@@ -147,23 +182,30 @@ public class FBmsgCounter extends javax.swing.JFrame
             .addGroup(jPanelProgramLayout.createSequentialGroup()
                 .addContainerGap()
                 .addGroup(jPanelProgramLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                    .addGroup(jPanelProgramLayout.createSequentialGroup()
+                        .addComponent(jTextFieldName)
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                        .addComponent(jButtonAdd)
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                        .addComponent(jButtonRemove)
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                        .addComponent(jComboBoxForbiddenNames, javax.swing.GroupLayout.PREFERRED_SIZE, 86, javax.swing.GroupLayout.PREFERRED_SIZE))
                     .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, jPanelProgramLayout.createSequentialGroup()
                         .addComponent(jTextFieldFileLocation)
-                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                        .addComponent(jButton1)
-                        .addGap(178, 178, 178))
-                    .addGroup(jPanelProgramLayout.createSequentialGroup()
-                        .addComponent(jLabel1)
-                        .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
+                        .addComponent(jButton1))
+                    .addComponent(jTextFieldOwnerInfo)
+                    .addComponent(jScrollPane1, javax.swing.GroupLayout.Alignment.TRAILING, javax.swing.GroupLayout.DEFAULT_SIZE, 676, Short.MAX_VALUE)
                     .addGroup(jPanelProgramLayout.createSequentialGroup()
                         .addGroup(jPanelProgramLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                             .addGroup(jPanelProgramLayout.createSequentialGroup()
                                 .addComponent(jButtonExecute)
                                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                                 .addComponent(jLabelState))
-                            .addComponent(jScrollPane1, javax.swing.GroupLayout.PREFERRED_SIZE, 474, javax.swing.GroupLayout.PREFERRED_SIZE)
-                            .addComponent(jTextFieldOwnerInfo, javax.swing.GroupLayout.PREFERRED_SIZE, 438, javax.swing.GroupLayout.PREFERRED_SIZE))
-                        .addGap(0, 14, Short.MAX_VALUE))))
+                            .addComponent(jLabel2)
+                            .addComponent(jLabel1))
+                        .addGap(0, 0, Short.MAX_VALUE)))
+                .addContainerGap())
         );
         jPanelProgramLayout.setVerticalGroup(
             jPanelProgramLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
@@ -172,8 +214,8 @@ public class FBmsgCounter extends javax.swing.JFrame
                 .addComponent(jTextFieldOwnerInfo, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
                 .addGap(18, 18, 18)
                 .addComponent(jLabel1)
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                .addGroup(jPanelProgramLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING)
+                .addGap(9, 9, 9)
+                .addGroup(jPanelProgramLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
                     .addComponent(jTextFieldFileLocation, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
                     .addComponent(jButton1))
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
@@ -181,7 +223,15 @@ public class FBmsgCounter extends javax.swing.JFrame
                     .addComponent(jButtonExecute)
                     .addComponent(jLabelState))
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                .addComponent(jScrollPane1, javax.swing.GroupLayout.PREFERRED_SIZE, 320, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addComponent(jLabel2)
+                .addGap(5, 5, 5)
+                .addGroup(jPanelProgramLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+                    .addComponent(jTextFieldName, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                    .addComponent(jButtonAdd)
+                    .addComponent(jButtonRemove)
+                    .addComponent(jComboBoxForbiddenNames, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
+                .addGap(18, 18, 18)
+                .addComponent(jScrollPane1, javax.swing.GroupLayout.PREFERRED_SIZE, 260, javax.swing.GroupLayout.PREFERRED_SIZE)
                 .addContainerGap(41, Short.MAX_VALUE))
         );
 
@@ -198,7 +248,7 @@ public class FBmsgCounter extends javax.swing.JFrame
             .addGroup(jPanelCreditsLayout.createSequentialGroup()
                 .addGap(146, 146, 146)
                 .addComponent(jLabel3)
-                .addContainerGap(156, Short.MAX_VALUE))
+                .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
             .addGroup(jPanelCreditsLayout.createSequentialGroup()
                 .addContainerGap()
                 .addComponent(jScrollPane2)
@@ -221,14 +271,14 @@ public class FBmsgCounter extends javax.swing.JFrame
             .addGroup(jPanelHomeLayout.createSequentialGroup()
                 .addGap(26, 26, 26)
                 .addComponent(jLabelMainPicture)
-                .addContainerGap(474, Short.MAX_VALUE))
+                .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
         );
         jPanelHomeLayout.setVerticalGroup(
             jPanelHomeLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addGroup(jPanelHomeLayout.createSequentialGroup()
                 .addContainerGap()
                 .addComponent(jLabelMainPicture)
-                .addContainerGap(488, Short.MAX_VALUE))
+                .addContainerGap(482, Short.MAX_VALUE))
         );
 
         jMenuHome.setText("Home");
@@ -281,9 +331,11 @@ public class FBmsgCounter extends javax.swing.JFrame
         getContentPane().setLayout(layout);
         layout.setHorizontalGroup(
             layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addComponent(jPanelProgram, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
             .addComponent(jPanelCredits, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
             .addComponent(jPanelHome, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+            .addGroup(layout.createSequentialGroup()
+                .addComponent(jPanelProgram, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addGap(0, 0, Short.MAX_VALUE))
         );
         layout.setVerticalGroup(
             layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
@@ -315,9 +367,9 @@ public class FBmsgCounter extends javax.swing.JFrame
         System.out.println("fileExtension: " + fileExtension);
         if (ProtocolStrings.exactFileExtension.equals(fileExtension))
         {
-            Controller controller = new Controller();
             if (controller.formatData(filePath))
             {
+                controller.omitParticularUserAlias(peopleToRemove);
                 populatejTableFriends(controller.getResults());
                 jTextFieldOwnerInfo.setText(controller.ownerInformation());
                 jLabelState.setText("The whole data was loaded correctly");
@@ -373,19 +425,61 @@ public class FBmsgCounter extends javax.swing.JFrame
         jPanelProgram.setVisible(false);
     }//GEN-LAST:event_jMenuHomeMouseClicked
 
+    private void jButtonAddActionPerformed(java.awt.event.ActionEvent evt)//GEN-FIRST:event_jButtonAddActionPerformed
+    {//GEN-HEADEREND:event_jButtonAddActionPerformed
+
+        if (jTextFieldName.getText().length() <= 30)
+        {
+            jComboBoxForbiddenNames.addItem(jTextFieldName.getText());
+            peopleToRemove.add(jTextFieldName.getText());
+            jLabelState.setText("Name added successfully");
+        }
+        else
+        {
+            jLabelState.setText("Name is too long");
+        }
+        jLabelState.setVisible(true);
+        jTextFieldName.setText("");
+    }//GEN-LAST:event_jButtonAddActionPerformed
+
+    private void jButtonRemoveActionPerformed(java.awt.event.ActionEvent evt)//GEN-FIRST:event_jButtonRemoveActionPerformed
+    {//GEN-HEADEREND:event_jButtonRemoveActionPerformed
+
+        for (Iterator<String> iter = peopleToRemove.listIterator(); iter.hasNext();)
+        {
+            String a = iter.next();
+            if (a.equals(jComboBoxForbiddenNames.getSelectedItem()))
+            {
+                iter.remove();
+            }
+        }
+        jComboBoxForbiddenNames.removeItemAt(jComboBoxForbiddenNames.getSelectedIndex());
+        jLabelState.setText("Name removed successfully");
+        jTextFieldName.setText("");
+    }//GEN-LAST:event_jButtonRemoveActionPerformed
+
     private void populatejTableFriends(List<Friend> friends)
     {
+        clearTable(jTableFriends);
         String[] friendsTableColumnNames = new String[]
         {
-            "#", "Friend Name", "Messages"
+            "#", "Friend Name", "Messages", "First Message", "Last Message", "Chat Duration"
         };
         List<Friend> listOfFriends = friends;
-        Object[][] data = new Object[listOfFriends.size()][3];
+        Object[][] data = new Object[listOfFriends.size()][6];
         for (int i = 0; i < listOfFriends.size(); i++)
         {
+            int messageCounter = listOfFriends.get(i).getCounter();
+            Date firstMessage = listOfFriends.get(i).getFirstMessage();
+            Date lastMessage = listOfFriends.get(i).getLastMessage();
+            int chatDuration = controller.daysBetween(firstMessage, lastMessage);
+
             data[i][0] = i + 1;
             data[i][1] = listOfFriends.get(i).getName();
-            data[i][2] = listOfFriends.get(i).getCounter();
+            data[i][2] = messageCounter;
+            data[i][3] = firstMessage;
+            data[i][4] = lastMessage;
+            data[i][5] = chatDuration + " days";
         }
         jTableFriends.setModel(new DefaultTableModel(data, friendsTableColumnNames)
         {
@@ -396,9 +490,23 @@ public class FBmsgCounter extends javax.swing.JFrame
             }
         });
 
-        jTableFriends.getColumnModel().getColumn(0).setPreferredWidth(10);
-        jTableFriends.getColumnModel().getColumn(1).setPreferredWidth(100);
-        jTableFriends.getColumnModel().getColumn(2).setPreferredWidth(100);
+//        jTableFriends.getColumnModel().getColumn(0).setPreferredWidth(3);
+//        jTableFriends.getColumnModel().getColumn(1).setPreferredWidth(10);
+//        jTableFriends.getColumnModel().getColumn(2).setPreferredWidth(5);
+//        jTableFriends.getColumnModel().getColumn(3).setPreferredWidth(10);
+//        jTableFriends.getColumnModel().getColumn(4).setPreferredWidth(10);
+//        jTableFriends.getColumnModel().getColumn(5).setPreferredWidth(7);
+    }
+
+    public static void clearTable(final JTable table)
+    {
+        for (int i = 0; i < table.getRowCount(); i++)
+        {
+            for (int j = 0; j < table.getColumnCount(); j++)
+            {
+                table.setValueAt("", i, j);
+            }
+        }
     }
 
     private void creditsText()
@@ -462,24 +570,32 @@ public class FBmsgCounter extends javax.swing.JFrame
                 {
                     javax.swing.UIManager.setLookAndFeel(info.getClassName());
                     break;
+
                 }
             }
         }
         catch (ClassNotFoundException ex)
         {
-            java.util.logging.Logger.getLogger(FBmsgCounter.class.getName()).log(java.util.logging.Level.SEVERE, null, ex);
+            java.util.logging.Logger.getLogger(FBmsgCounter.class
+                    .getName()).log(java.util.logging.Level.SEVERE, null, ex);
         }
+
         catch (InstantiationException ex)
         {
-            java.util.logging.Logger.getLogger(FBmsgCounter.class.getName()).log(java.util.logging.Level.SEVERE, null, ex);
+            java.util.logging.Logger.getLogger(FBmsgCounter.class
+                    .getName()).log(java.util.logging.Level.SEVERE, null, ex);
         }
+
         catch (IllegalAccessException ex)
         {
-            java.util.logging.Logger.getLogger(FBmsgCounter.class.getName()).log(java.util.logging.Level.SEVERE, null, ex);
+            java.util.logging.Logger.getLogger(FBmsgCounter.class
+                    .getName()).log(java.util.logging.Level.SEVERE, null, ex);
         }
+
         catch (javax.swing.UnsupportedLookAndFeelException ex)
         {
-            java.util.logging.Logger.getLogger(FBmsgCounter.class.getName()).log(java.util.logging.Level.SEVERE, null, ex);
+            java.util.logging.Logger.getLogger(FBmsgCounter.class
+                    .getName()).log(java.util.logging.Level.SEVERE, null, ex);
         }
         //</editor-fold>
         //</editor-fold>
@@ -498,8 +614,12 @@ public class FBmsgCounter extends javax.swing.JFrame
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JButton jButton1;
+    private javax.swing.JButton jButtonAdd;
     private javax.swing.JButton jButtonExecute;
+    private javax.swing.JButton jButtonRemove;
+    private javax.swing.JComboBox jComboBoxForbiddenNames;
     private javax.swing.JLabel jLabel1;
+    private javax.swing.JLabel jLabel2;
     private javax.swing.JLabel jLabel3;
     private javax.swing.JLabel jLabelMainPicture;
     private javax.swing.JLabel jLabelState;
@@ -515,6 +635,7 @@ public class FBmsgCounter extends javax.swing.JFrame
     private javax.swing.JTable jTableFriends;
     private javax.swing.JTextArea jTextAreaCredits;
     private javax.swing.JTextField jTextFieldFileLocation;
+    private javax.swing.JTextField jTextFieldName;
     private javax.swing.JTextField jTextFieldOwnerInfo;
     // End of variables declaration//GEN-END:variables
 }
