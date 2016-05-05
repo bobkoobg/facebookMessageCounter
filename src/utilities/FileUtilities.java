@@ -7,51 +7,38 @@ import java.util.ArrayList;
 import java.util.List;
 import protocol.ProtocolStrings;
 
-public class FileUtilities
-{
+public class FileUtilities {
 
     List<String> fileLines;
 
-    public FileUtilities()
-    {
+    public FileUtilities() {
         fileLines = new ArrayList();
     }
 
-    public List<String> readFromFile(String fileName)
-    {
+    public List<String> readFromFile( String fileName ) {
         BufferedReader br = null;
 
-        try
-        {
+        try {
             String sCurrentLine;
 
-            br = new BufferedReader(new FileReader(fileName));
-            while ((sCurrentLine = br.readLine()) != null)
-            {
-                fileLines.add(sCurrentLine);
+            br = new BufferedReader( new FileReader( fileName ) );
+            while ( (sCurrentLine = br.readLine()) != null ) {
+                fileLines.add( sCurrentLine );
             }
 
-        }
-        catch (IOException e)
-        {
+        } catch ( IOException e ) {
             e.printStackTrace();
             fileLines.clear();
-            fileLines.add(ProtocolStrings.fileReadingError + e);
-        }
-        finally
-        {
-            try
-            {
-                if (br != null)
-                {
+            fileLines.add( ProtocolStrings.fileReadingError + e );
+        } finally {
+            try {
+                if ( br != null ) {
                     br.close();
                 }
-            }
-            catch (IOException ex)
-            {
+            } catch ( IOException ex ) {
                 ex.printStackTrace();
                 fileLines.clear();
-                fileLines.add(ProtocolStrings.fileReadingError + ex);
+                fileLines.add( ProtocolStrings.fileReadingError + ex );
             }
         }
         return fileLines;
